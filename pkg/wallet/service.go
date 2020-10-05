@@ -2,7 +2,7 @@ package wallet
 
 import (
 	"errors"
-
+	"reflect"
 	"github.com/google/uuid"
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
@@ -84,9 +84,17 @@ func (s *Service) Pay(accountID int64, amount types.Money, categoty types.Paymen
 		return nil, ErrAmountMustBePositive
 	}
 
-	account, err := s.FindAccountByID(accountID)
-	if err != nil {
-		return nil, err
+	
+	var account *types.Account
+	for _, acc := range s.accounts {
+		if acc.ID == accountID {
+			account = acc
+			break
+		}
+	}
+
+	if account == nil {
+		return nil, ErrAccountNotFound
 	}
 
 	if account.Balance < amount {
@@ -147,6 +155,10 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 
 	payment_new, err := s.Pay(payment.AccountID, payment.Amount, payment.Category)
 	if err != nil {
+		return nil, err
+	}
+	
+	if(!reflect.DeepEqual(payment_new, payment)){
 		return nil, err
 	}
 	return payment_new, nil
