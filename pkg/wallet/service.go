@@ -84,16 +84,9 @@ func (s *Service) Pay(accountID int64, amount types.Money, categoty types.Paymen
 		return nil, ErrAmountMustBePositive
 	}
 
-	var account *types.Account
-	for _, acc := range s.accounts {
-		if acc.ID == accountID {
-			account = acc
-			break
-		}
-	}
-
-	if account == nil {
-		return nil, ErrAccountNotFound
+	account, err := s.FindAccountByID(accountID)
+	if err != nil {
+		return nil, err
 	}
 
 	if account.Balance < amount {
