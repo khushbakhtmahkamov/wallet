@@ -197,7 +197,7 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 	return payment, nil
 }
 
-func (s *testService) Repeat(paymentID string) (*types.Payment, error) {
+func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 	payment, err := s.FindPaymentByID(paymentID)
 	if err != nil {
 		return nil, err
