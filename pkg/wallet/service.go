@@ -152,20 +152,9 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 		return nil, err
 	}
 
-	account, err := s.FindAccountByID(payment.AccountID)
+	payment_new, err := s.Pay(payment.AccountID, payment.Amount, payment.Category)
 	if err != nil {
 		return nil, err
 	}
-
-	account.Balance -= payment.Amount
-	paymentID = uuid.New().String()
-	payment_new := &types.Payment{
-		ID:        paymentID,
-		AccountID: payment.AccountID,
-		Amount:    payment.Amount,
-		Category:  payment.Category,
-		Status:    types.PaymentStatusInProgress,
-	}
-	s.payments = append(s.payments, payment_new)
 	return payment_new, nil
 }
