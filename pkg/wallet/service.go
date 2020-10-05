@@ -76,36 +76,6 @@ func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Pay
 	return account, payments, nil
 }
 
-func (s *testService) addAccountWithBalance(phone types.Phone, balance types.Money) (*types.Account, error) {
-
-	account, err := s.RegisterAccount(phone)
-	if err != nil {
-		return nil, fmt.Errorf("can`t register account, error =%v", err)
-	}
-
-	err = s.Deposit(account.ID, balance)
-	if err != nil {
-		return nil, fmt.Errorf("can`t deposit account, error =%v", err)
-	}
-
-	return account, nil
-}
-
-func RegisterAccount(service *Service, phone types.Phone) {
-	for _, account := range service.accounts {
-		if account.Phone == phone {
-			return
-		}
-	}
-
-	service.nextAccountID++
-	service.accounts = append(service.accounts, &types.Account{
-		ID:      service.nextAccountID,
-		Phone:   phone,
-		Balance: 0,
-	})
-}
-
 func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
 	for _, account := range s.accounts {
 		if account.Phone == phone {
@@ -195,13 +165,13 @@ func (s *Service) Pay(accountID int64, amount types.Money, categoty types.Paymen
 }
 
 func (s *Service) Reject(paymentID string) error {
-	
+
 	payment, err := s.FindPaymentByID(paymentID)
 	if err != nil {
 		return err
 	}
 
-	account, err:= s.FindAccountByID(payment.AccountID)
+	account, err := s.FindAccountByID(payment.AccountID)
 	if err != nil {
 		return err
 	}
@@ -227,13 +197,13 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 	return payment, nil
 }
 
-func (s *testService) Repeat(paymentID string) (*types.Payment,error) {
+func (s *testService) Repeat(paymentID string) (*types.Payment, error) {
 	payment, err := s.FindPaymentByID(paymentID)
 	if err != nil {
 		return nil, err
 	}
 
-	account, err:= s.FindAccountByID(payment.AccountID)
+	account, err := s.FindAccountByID(payment.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -248,5 +218,5 @@ func (s *testService) Repeat(paymentID string) (*types.Payment,error) {
 		Status:    types.PaymentStatusInProgress,
 	}
 	s.payments = append(s.payments, payment_new)
-	return payment_new,nil
+	return payment_new, nil
 }
