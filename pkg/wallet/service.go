@@ -130,8 +130,21 @@ func (s *Service) Pay(accountID int64, amount types.Money, categoty types.Paymen
 func (s *Service) Reject(paymentID string) error {
 	payment, err := s.FindPaymentByID(paymentID)
 	if err == ErrPaymentNotFound {
+		return ErrPaymentNotFound
+	}
+
+	var account *types.Account
+	for _, acc := range s.accounts {
+		if acc.ID == payment.AccountID {
+			account = acc
+			break
+		}
+	}
+
+	if account == nil {
 		return ErrAccountNotFound
 	}
+	account.Balance += payment.Amount
 
 	payment.Status = types.PaymentStatusFail
 	return nil

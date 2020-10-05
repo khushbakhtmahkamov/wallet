@@ -7,8 +7,8 @@ type PaymentCategory string
 type PaymentStatus string
 
 const (
-	PaymentStatusOk PaymentStatus = "OK"
-	PaymentStatusFail PaymentStatus = "FAIL"
+	PaymentStatusOk         PaymentStatus = "OK"
+	PaymentStatusFail       PaymentStatus = "FAIL"
 	PaymentStatusInProgress PaymentStatus = "INPROGRESS"
 )
 
@@ -44,18 +44,18 @@ type Card struct {
 }
 
 type Payment struct {
-	ID     string
+	ID        string
 	AccountID int64
-	Amount Money
-	Category PaymentCategory
-	Status   PaymentStatus
+	Amount    Money
+	Category  PaymentCategory
+	Status    PaymentStatus
 }
 
 type Phone string
 
 type Account struct {
-	ID int64
-	Phone Phone
+	ID      int64
+	Phone   Phone
 	Balance Money
 }
 
