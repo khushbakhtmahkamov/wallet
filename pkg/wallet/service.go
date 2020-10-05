@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"errors"
+	"reflect"
 
 	"github.com/google/uuid"
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
@@ -153,7 +154,7 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 	}
 
 	payment_new, err := s.Pay(payment.AccountID, payment.Amount, payment.Category)
-	if err != nil {
+	if !reflect.DeepEqual(payment_new, payment) {
 		return nil, err
 	}
 
