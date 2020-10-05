@@ -226,3 +226,27 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 	}
 	return payment, nil
 }
+
+func (s *testService) Repeat(paymentID string) (*types.Payment,error) {
+	payment, err := s.FindPaymentByID(paymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err:= s.FindAccountByID(payment.AccountID)
+	if err != nil {
+		return nil, err
+	}
+
+	account.Balance -= payment.Amount
+	paymentID = uuid.New().String()
+	payment_new := &types.Payment{
+		ID:        paymentID,
+		AccountID: payment.AccountID,
+		Amount:    payment.Amount,
+		Category:  payment.Category,
+		Status:    types.PaymentStatusInProgress,
+	}
+	s.payments = append(s.payments, payment_new)
+	return payment_new,nil
+}

@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"github.com/google/uuid"
 	"reflect"
 	"testing"
 
@@ -46,6 +47,7 @@ func TestServise_Reject_success(t *testing.T) {
 	}
 }
 
+
 func TestServise_FindPaymentByID_success(t *testing.T) {
 	s := newTestService()
 	_, payments, err := s.addAccount(defaultTestAccount)
@@ -64,6 +66,27 @@ func TestServise_FindPaymentByID_success(t *testing.T) {
 
 	if !reflect.DeepEqual(payment, got) {
 		t.Errorf("FindPaymentByID() wrong payment returned =%v", err)
+		return
+	}
+}
+
+func TestServise_FindPaymentByID_fail(t *testing.T) {
+	s := newTestService()
+	_, _, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+
+	_, err = s.FindPaymentByID(uuid.New().String())
+	if err == nil {
+		t.Errorf("FindPaymentByID() can`t pay account, error =%v", err)
+		return
+	}
+
+	if err != ErrPaymentNotFound {
+		t.Errorf("FindPaymentByID() mast returned ErrPaymentNotFound returned =%v", err)
 		return
 	}
 }
