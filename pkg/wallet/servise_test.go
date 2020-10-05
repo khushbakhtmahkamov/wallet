@@ -140,34 +140,32 @@ func TestServise_FindPaymentByID_fail(t *testing.T) {
 	}
 }
 
-func TestServise_Repeat_success(t *testing.T) {
+func TestService_Repeat_success(t *testing.T) {
+	svc := Service{}
+	svc.RegisterAccount("+9920000001")
 
-	s := newTestService()
-
-	_, payments, err := s.addAccount(defaultTestAccount)
+	account, err := svc.FindAccountByID(1)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
-	payment := payments[0]
-
-	savedPayment, err := s.FindPaymentByID(payment.ID)
+	err = svc.Deposit(account.ID, 1000_00)
 	if err != nil {
-		t.Errorf("Reject() can`t faind payment by id, error =%v", err)
-		return
+		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
-	if savedPayment.Status != types.PaymentStatusInProgress {
-		t.Errorf("Reject() status did not chenged, error =%v", err)
-		return
-	}
-
-	_, err = s.Repeat(payment.ID)
+	payment, err := svc.Pay(account.ID, 100_00, "auto")
 	if err != nil {
-		t.Errorf("Repeat() can`t reject account, error =%v", err)
-		return
+		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
+	pay, err := svc.FindPaymentByID(payment.ID)
+	if err != nil {
+		t.Errorf("\ngot > %v \nwant > nil", err)
+	}
 
+	pay, err = svc.Repeat(pay.ID)
+	if err != nil {
+		t.Errorf("Repeat(): Error(): can't pay for an account(%v): %v", pay.ID, err)
+	}
 }
