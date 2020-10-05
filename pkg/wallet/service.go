@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
@@ -24,56 +23,6 @@ type Service struct {
 	nextAccountID int64
 	accounts      []*types.Account
 	payments      []*types.Payment
-}
-
-type testService struct {
-	*Service
-}
-
-func newTestService() *testService {
-	return &testService{Service: &Service{}}
-}
-
-type testAccount struct {
-	phone    types.Phone
-	balance  types.Money
-	payments []struct {
-		amount   types.Money
-		category types.PaymentCategory
-	}
-}
-
-var defaultTestAccount = testAccount{
-	phone:   "+992000000000",
-	balance: 10000,
-	payments: []struct {
-		amount   types.Money
-		category types.PaymentCategory
-	}{
-		{amount: 100, category: "auto"},
-	},
-}
-
-func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, error) {
-	account, err := s.RegisterAccount(data.phone)
-	if err != nil {
-		return nil, nil, fmt.Errorf("can`t register account, error =%v", err)
-	}
-
-	err = s.Deposit(account.ID, data.balance)
-	if err != nil {
-		return nil, nil, fmt.Errorf("can`t deposit account, error =%v", err)
-	}
-
-	payments := make([]*types.Payment, len(data.payments))
-	for i, payment := range data.payments {
-		payments[i], err = s.Pay(account.ID, payment.amount, payment.category)
-		if err != nil {
-			return nil, nil, fmt.Errorf("can`t make payment, error =%v", err)
-		}
-	}
-
-	return account, payments, nil
 }
 
 func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
