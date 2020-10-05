@@ -163,48 +163,9 @@ func TestServise_Repeat_success(t *testing.T) {
 		return
 	}
 
-	payment_new, err := s.Repeat(payment.ID)
+	_, err = s.Repeat(payment.ID)
 	if err != nil {
 		t.Errorf("Repeat() can`t reject account, error =%v", err)
-		return
-	}
-
-	if payment_new.AccountID != payment.AccountID {
-		t.Errorf("Repeat() account id , error =%v", err)
-		return
-	}
-
-}
-
-func TestServise_Repeat_fail(t *testing.T) {
-
-	s := newTestService()
-
-	_, payments, err := s.addAccount(defaultTestAccount)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	payment := payments[0]
-
-	payment, err = s.Repeat(payment.ID)
-	if err != nil {
-		t.Errorf("Repeat() can`t reject account, error =%v", err)
-		return
-	}
-	if err == ErrPaymentNotFound {
-		t.Errorf("FindPaymentByID() mast returned ErrPaymentNotFound returned =%v", err)
-		return
-	}
-	_, err = s.FindPaymentByID(uuid.New().String())
-	if err == nil {
-		t.Errorf("FindPaymentByID() can`t pay account, error =%v", err)
-		return
-	}
-
-	if err != ErrPaymentNotFound {
-		t.Errorf("FindPaymentByID() mast returned ErrPaymentNotFound returned =%v", err)
 		return
 	}
 
