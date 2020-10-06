@@ -120,7 +120,8 @@ func TestService_FindPaymentByID_fail(t *testing.T) {
 }
 
 func TestService_Repeat_success(t *testing.T) {
-	svc := Service{}
+
+	svc := &Service{}
 	svc.RegisterAccount("+9920000001")
 
 	account, err := svc.FindAccountByID(1)
