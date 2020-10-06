@@ -3,9 +3,7 @@ package wallet
 import (
 	"reflect"
 	"testing"
-
 	"github.com/google/uuid"
-
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
 
