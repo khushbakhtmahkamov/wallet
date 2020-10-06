@@ -3,6 +3,7 @@ package wallet
 import (
 	"reflect"
 	"testing"
+
 	"github.com/google/uuid"
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
@@ -118,7 +119,7 @@ func TestServise_FindPaymentByID_fail(t *testing.T) {
 	}
 }
 
-func TestService_Repeat_success(t *testing.T) {
+func TestServise_Repeat_success(t *testing.T) {
 	svc := Service{}
 	svc.RegisterAccount("+9920000001")
 
