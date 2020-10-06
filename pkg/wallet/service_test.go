@@ -8,7 +8,7 @@ import (
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
 
-func TestServise_Reject_success(t *testing.T) {
+func TestService_Reject_success(t *testing.T) {
 	s := &Service{}
 	phone := types.Phone("+992000000000")
 	account, err := s.RegisterAccount(phone)
@@ -53,7 +53,7 @@ func TestServise_Reject_success(t *testing.T) {
 
 }
 
-func TestServise_FindPaymentByID_success(t *testing.T) {
+func TestService_FindPaymentByID_success(t *testing.T) {
 	s := &Service{}
 	phone := types.Phone("+992000000000")
 	account, err := s.RegisterAccount(phone)
@@ -86,7 +86,7 @@ func TestServise_FindPaymentByID_success(t *testing.T) {
 	}
 }
 
-func TestServise_FindPaymentByID_fail(t *testing.T) {
+func TestService_FindPaymentByID_fail(t *testing.T) {
 	s := &Service{}
 	phone := types.Phone("+992000000000")
 	account, err := s.RegisterAccount(phone)
@@ -119,7 +119,7 @@ func TestServise_FindPaymentByID_fail(t *testing.T) {
 	}
 }
 
-func TestServise_Repeat_success(t *testing.T) {
+func TestService_Repeat_success(t *testing.T) {
 	svc := Service{}
 	svc.RegisterAccount("+9920000001")
 
