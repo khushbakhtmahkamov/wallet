@@ -64,3 +64,11 @@ type PaymentSource struct {
 	Number  string //
 	Balance Money
 }
+
+type Favorite struct {
+	ID        string
+	AccountID int64
+	Name      string
+	Amount    Money
+	Category  PaymentCategory
+}
