@@ -1,156 +1,141 @@
 package wallet
 
-import (
-	"reflect"
-	"testing"
 
-	"github.com/google/uuid"
-	"github.com/khushbakhtmahkamov/wallet/pkg/types"
+import (
+	"testing"
 )
 
-func TestService_Reject_success(t *testing.T) {
-	s := &Service{}
-	phone := types.Phone("+992000000000")
-	account, err := s.RegisterAccount(phone)
-	if err != nil {
-		t.Errorf("can`t register account, error =%v", err)
-		return
-	}
 
-	err = s.Deposit(account.ID, 10000)
-	if err != nil {
-		t.Errorf("can`t deposit account, error =%v", err)
-		return
-	}
+func TestService_FindAccountByID_success_user(t *testing.T){
+	var svc Service
+	svc.RegisterAccount("+992000000001")
 
-	payment, err := s.Pay(account.ID, 10000, "auto")
-	if err != nil {
-		t.Errorf("can`t create pay, error =%v", err)
-		return
-	}
+	account, err := svc.FindAccountByID(1)
 
-	err = s.Reject(payment.ID)
-	if err != nil {
-		t.Errorf("Reject() can`t reject account, error =%v", err)
-		return
-	}
-	savedPayment, err := s.FindPaymentByID(payment.ID)
-	if err != nil {
-		t.Errorf("Reject() can`t faind payment by id, error =%v", err)
-		return
-	}
-
-	if savedPayment.Status != types.PaymentStatusFail {
-		t.Errorf("Reject() status did not chenged, error =%v", err)
-		return
-	}
-
-	_, err = s.FindAccountByID(payment.AccountID)
-	if err != nil {
-		t.Errorf("Reject() can`t faind account by id, error =%v", err)
-		return
+	if err != nil{
+		t.Errorf("method returned not nil error, account => %v", account)
 	}
 
 }
 
-func TestService_FindPaymentByID_success(t *testing.T) {
-	s := &Service{}
-	phone := types.Phone("+992000000000")
-	account, err := s.RegisterAccount(phone)
-	if err != nil {
-		t.Errorf("can`t register account, error =%v", err)
-		return
+func TestService_FindAccountByID_notFound_user(t *testing.T){
+	var svc Service
+	svc.RegisterAccount("+992000000001")
+
+	account, err := svc.FindAccountByID(2)
+
+	if err == nil{
+		t.Errorf("method returned nil error, account => %v", account)
 	}
 
-	err = s.Deposit(account.ID, 10000)
-	if err != nil {
-		t.Errorf("can`t deposit account, error =%v", err)
-		return
-	}
-
-	payment, err := s.Pay(account.ID, 10000, "auto")
-	if err != nil {
-		t.Errorf("can`t create pay, error =%v", err)
-		return
-	}
-
-	got, err := s.FindPaymentByID(payment.ID)
-	if err != nil {
-		t.Errorf("FindPaymentByID() can`t pay account, error =%v", err)
-		return
-	}
-
-	if !reflect.DeepEqual(payment, got) {
-		t.Errorf("FindPaymentByID() wrong payment returned =%v", err)
-		return
-	}
 }
 
-func TestService_FindPaymentByID_fail(t *testing.T) {
-	s := &Service{}
-	phone := types.Phone("+992000000000")
-	account, err := s.RegisterAccount(phone)
-	if err != nil {
-		t.Errorf("can`t register account, error =%v", err)
-		return
+func TestService_Reject_success_user(t *testing.T){
+	var svc Service
+	svc.RegisterAccount("+992000000001")
+	account, err := svc.FindAccountByID(1)
+
+	if err != nil{
+		t.Errorf("method RegisterAccount returned not nil error, error => %v", err)
 	}
 
-	err = s.Deposit(account.ID, 10000)
-	if err != nil {
-		t.Errorf("can`t deposit account, error =%v", err)
-		return
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil{
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
 	}
 
-	_, err = s.Pay(account.ID, 10000, "auto")
-	if err != nil {
-		t.Errorf("can`t create pay, error =%v", err)
-		return
+
+
+	payment, err := svc.Pay(account.ID, 10_00,"Cafe")
+
+	if err != nil{
+		t.Errorf("method Pay returned not nil error, error => %v", err)
 	}
 
-	_, err = s.FindPaymentByID(uuid.New().String())
-	if err == nil {
-		t.Errorf("FindPaymentByID() can`t pay account, error =%v", err)
-		return
+	pay, err := svc.FindPaymentByID(payment.ID)
+
+	if err != nil{
+		t.Errorf("method FindPaymentByID returned not nil error, error => %v", err)
 	}
 
-	if err != ErrPaymentNotFound {
-		t.Errorf("FindPaymentByID() mast returned ErrPaymentNotFound returned =%v", err)
-		return
+	err = svc.Reject(pay.ID)
+
+	if err != nil{
+		t.Errorf("method Reject returned not nil error, error => %v", err)
 	}
+
+
+
 }
 
-func TestService_Repeat_success(t *testing.T) {
+func TestService_Reject_fail_user(t *testing.T){
+	var svc Service
+	svc.RegisterAccount("+992000000001")
+	account, err := svc.FindAccountByID(1)
 
-	s := &Service{}
-	phone := types.Phone("+992000000000")
-	_, err := s.RegisterAccount(phone)
-	if err != nil {
-		t.Errorf("can`t register account, error =%v", err)
-		return
+	if err != nil{
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
 	}
 
-	account, err := s.FindAccountByID(1)
-	if err != nil {
-		t.Errorf("\ngot > %v \nwant > nil", err)
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil{
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
 	}
 
-	err = s.Deposit(account.ID, 1000_00)
-	if err != nil {
-		t.Errorf("\ngot > %v \nwant > nil", err)
+
+	payment, err := svc.Pay(account.ID, 10_00,"Cafe")
+
+	if err != nil{
+		t.Errorf("method Pay returned not nil error, account => %v", account)
 	}
 
-	payment, err := s.Pay(account.ID, 100_00, "auto")
-	if err != nil {
-		t.Errorf("\ngot > %v \nwant > nil", err)
+	pay, err := svc.FindPaymentByID(payment.ID)
+
+	if err != nil{
+		t.Errorf("method FindPaymentByID returned not nil error, payment => %v", payment)
 	}
 
-	pay, err := s.FindPaymentByID(payment.ID)
-	if err != nil {
-		t.Errorf("\ngot > %v \nwant > nil", err)
+	err = svc.Reject(pay.ID+"uu")
+
+	if err == nil{
+		t.Errorf("method Reject returned not nil error, pay => %v", pay)
 	}
 
-	pay, err = s.Repeat(pay.ID)
-	if err != nil {
-		t.Errorf("Repeat(): Error(): can't pay for an account(%v): %v", pay.ID, err)
+
+
+}
+func TestService_Repeat_success_user(t *testing.T){
+	var svc Service
+	
+	account, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil{
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
 	}
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil{
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+
+	payment, err := svc.Pay(account.ID, 10_00,"Cafe")
+
+	if err != nil{
+		t.Errorf("method Pay returned not nil error, account => %v", account)
+	}
+
+	pay, err := svc.FindPaymentByID(payment.ID)
+
+	if err != nil{
+		t.Errorf("method FindPaymentByID returned not nil error, payment => %v", payment)
+	}
+
+	paymentNew, err := svc.Repeat(pay.ID)
+
+	if err != nil{
+		t.Errorf("method Repat returned not nil error, paymentNew => %v", paymentNew)
+	}
+
 }
