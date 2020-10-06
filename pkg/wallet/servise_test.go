@@ -1,7 +1,6 @@
 package wallet
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -10,65 +9,26 @@ import (
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
 
-type testService struct {
-	*Service
-}
-
-func newTestService() *testService {
-	return &testService{Service: &Service{}}
-}
-
-type testAccount struct {
-	phone    types.Phone
-	balance  types.Money
-	payments []struct {
-		amount   types.Money
-		category types.PaymentCategory
-	}
-}
-
-var defaultTestAccount = testAccount{
-	phone:   "+992000000000",
-	balance: 10000,
-	payments: []struct {
-		amount   types.Money
-		category types.PaymentCategory
-	}{
-		{amount: 100, category: "auto"},
-	},
-}
-
-func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, error) {
-	account, err := s.RegisterAccount(data.phone)
-	if err != nil {
-		return nil, nil, fmt.Errorf("can`t register account, error =%v", err)
-	}
-
-	err = s.Deposit(account.ID, data.balance)
-	if err != nil {
-		return nil, nil, fmt.Errorf("can`t deposit account, error =%v", err)
-	}
-
-	payments := make([]*types.Payment, len(data.payments))
-	for i, payment := range data.payments {
-		payments[i], err = s.Pay(account.ID, payment.amount, payment.category)
-		if err != nil {
-			return nil, nil, fmt.Errorf("can`t make payment, error =%v", err)
-		}
-	}
-
-	return account, payments, nil
-}
 func TestServise_Reject_success(t *testing.T) {
-	s := newTestService()
-
-	_, payments, err := s.addAccount(defaultTestAccount)
+	s := &Service{}
+	phone := types.Phone("+992000000000")
+	account, err := s.RegisterAccount(phone)
 	if err != nil {
-		t.Error(err)
+		t.Errorf("can`t register account, error =%v", err)
 		return
 	}
 
-	payment := payments[0]
+	err = s.Deposit(account.ID, 10000)
+	if err != nil {
+		t.Errorf("can`t deposit account, error =%v", err)
+		return
+	}
+
+	payment, err := s.Pay(account.ID, 10000, "auto")
+	if err != nil {
+		t.Errorf("can`t create pay, error =%v", err)
+		return
+	}
 
 	err = s.Reject(payment.ID)
 	if err != nil {
@@ -86,27 +46,34 @@ func TestServise_Reject_success(t *testing.T) {
 		return
 	}
 
-	savedAccount, err := s.FindAccountByID(payment.AccountID)
+	_, err = s.FindAccountByID(payment.AccountID)
 	if err != nil {
 		t.Errorf("Reject() can`t faind account by id, error =%v", err)
 		return
 	}
 
-	if savedAccount.Balance != defaultTestAccount.balance {
-		t.Errorf("Reject() balanse did not chenged, account =%v", err)
-		return
-	}
 }
 
 func TestServise_FindPaymentByID_success(t *testing.T) {
-	s := newTestService()
-	_, payments, err := s.addAccount(defaultTestAccount)
+	s := &Service{}
+	phone := types.Phone("+992000000000")
+	account, err := s.RegisterAccount(phone)
 	if err != nil {
-		t.Error(err)
+		t.Errorf("can`t register account, error =%v", err)
 		return
 	}
 
-	payment := payments[0]
+	err = s.Deposit(account.ID, 10000)
+	if err != nil {
+		t.Errorf("can`t deposit account, error =%v", err)
+		return
+	}
+
+	payment, err := s.Pay(account.ID, 10000, "auto")
+	if err != nil {
+		t.Errorf("can`t create pay, error =%v", err)
+		return
+	}
 
 	got, err := s.FindPaymentByID(payment.ID)
 	if err != nil {
@@ -121,10 +88,23 @@ func TestServise_FindPaymentByID_success(t *testing.T) {
 }
 
 func TestServise_FindPaymentByID_fail(t *testing.T) {
-	s := newTestService()
-	_, _, err := s.addAccount(defaultTestAccount)
+	s := &Service{}
+	phone := types.Phone("+992000000000")
+	account, err := s.RegisterAccount(phone)
 	if err != nil {
-		t.Error(err)
+		t.Errorf("can`t register account, error =%v", err)
+		return
+	}
+
+	err = s.Deposit(account.ID, 10000)
+	if err != nil {
+		t.Errorf("can`t deposit account, error =%v", err)
+		return
+	}
+
+	_, err = s.Pay(account.ID, 10000, "auto")
+	if err != nil {
+		t.Errorf("can`t create pay, error =%v", err)
 		return
 	}
 
