@@ -121,30 +121,35 @@ func TestService_FindPaymentByID_fail(t *testing.T) {
 
 func TestService_Repeat_success(t *testing.T) {
 
-	svc := &Service{}
-	svc.RegisterAccount("+9920000001")
+	s := &Service{}
+	phone := types.Phone("+992000000000")
+	_, err := s.RegisterAccount(phone)
+	if err != nil {
+		t.Errorf("can`t register account, error =%v", err)
+		return
+	}
 
-	account, err := svc.FindAccountByID(1)
+	account, err := s.FindAccountByID(1)
 	if err != nil {
 		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
-	err = svc.Deposit(account.ID, 1000_00)
+	err = s.Deposit(account.ID, 1000_00)
 	if err != nil {
 		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
-	payment, err := svc.Pay(account.ID, 100_00, "auto")
+	payment, err := s.Pay(account.ID, 100_00, "auto")
 	if err != nil {
 		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
-	pay, err := svc.FindPaymentByID(payment.ID)
+	pay, err := s.FindPaymentByID(payment.ID)
 	if err != nil {
 		t.Errorf("\ngot > %v \nwant > nil", err)
 	}
 
-	pay, err = svc.Repeat(pay.ID)
+	pay, err = s.Repeat(pay.ID)
 	if err != nil {
 		t.Errorf("Repeat(): Error(): can't pay for an account(%v): %v", pay.ID, err)
 	}
