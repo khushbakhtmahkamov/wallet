@@ -2,6 +2,11 @@ package wallet
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
@@ -188,19 +193,74 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 
 	var favorite *types.Favorite
 	for _, v := range s.favorites {
-		if v.ID == favoriteID{
+		if v.ID == favoriteID {
 			favorite = v
 			break
 		}
 	}
-	if favorite == nil{
+	if favorite == nil {
 		return nil, ErrFavoriteNotFound
 	}
 
 	payment, err := s.Pay(favorite.AccountID, favorite.Amount, favorite.Category)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return payment, nil
+}
+
+func (s *Service) ExportToFile(path string) error {
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var str string
+	for _, v := range s.accounts {
+		str += fmt.Sprint(v.ID) + ";" + string(v.Phone) + ";" + fmt.Sprint(v.Balance) + "|"
+	}
+	_, err = file.WriteString(str)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) ImportFromFile(path string) error {
+
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	strArray := strings.Split(string(content), "|")
+	if len(strArray) > 0 {
+		strArray = strArray[:len(strArray)-1]
+	}
+	for _, v := range strArray {
+		strArrAcount := strings.Split(v, ";")
+		fmt.Println(strArrAcount)
+
+		id, err := strconv.ParseInt(strArrAcount[0], 10, 64)
+		if err != nil {
+			return err
+		}
+		balance, err := strconv.ParseInt(strArrAcount[2], 10, 64)
+		if err != nil {
+			return err
+		}
+		account := &types.Account{
+			ID:      id,
+			Phone:   types.Phone(strArrAcount[1]),
+			Balance: types.Money(balance),
+		}
+		s.accounts = append(s.accounts, account)
+	}
+
+	return nil
 }
