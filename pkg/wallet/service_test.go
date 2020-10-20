@@ -2,6 +2,8 @@ package wallet
 
 import (
 	"testing"
+
+	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
 
 func TestService_FindAccountByID_success_user(t *testing.T) {
@@ -159,4 +161,84 @@ func TestService_Favorite_success(t *testing.T) {
 	if err != nil {
 		t.Errorf("method PayFromFavorite returned not nil error, paymentFavorite => %v", paymentFavorite)
 	}
+}
+
+func TestService_ExportHistory_success_user(t *testing.T) {
+	var svc Service
+
+	account, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	_, err = svc.Pay(account.ID, 1, "Cafe")
+	_, err = svc.Pay(account.ID, 2, "Cafe")
+	_, err = svc.Pay(account.ID, 3, "Cafe")
+	_, err = svc.Pay(account.ID, 4, "Cafe")
+	_, err = svc.Pay(account.ID, 5, "Cafe")
+	_, err = svc.Pay(account.ID, 6, "Cafe")
+	_, err = svc.Pay(account.ID, 7, "Cafe")
+	_, err = svc.Pay(account.ID, 8, "Cafe")
+	_, err = svc.Pay(account.ID, 9, "Cafe")
+	_, err = svc.Pay(account.ID, 10, "Cafe")
+	_, err = svc.Pay(account.ID, 11, "Cafe")
+	if err != nil {
+		t.Errorf("method Pay returned not nil error, err => %v", err)
+	}
+
+	payments, err := svc.ExportAccountHistory(account.ID)
+
+	if err != nil {
+		t.Errorf("method ExportAccountHistory returned not nil error, err => %v", err)
+	}
+	err = svc.HistoryToFiles(payments, "data", 4)
+
+	if err != nil {
+		t.Errorf("method HistoryToFiles returned not nil error, err => %v", err)
+	}
+
+}
+
+func BenchmarkSumPayment_user(b *testing.B) {
+	var svc Service
+
+	account, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		b.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil {
+		b.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	_, err = svc.Pay(account.ID, 1, "Cafe")
+	_, err = svc.Pay(account.ID, 2, "Cafe")
+	_, err = svc.Pay(account.ID, 3, "Cafe")
+	_, err = svc.Pay(account.ID, 4, "Cafe")
+	_, err = svc.Pay(account.ID, 5, "Cafe")
+	_, err = svc.Pay(account.ID, 6, "Cafe")
+	_, err = svc.Pay(account.ID, 7, "Cafe")
+	_, err = svc.Pay(account.ID, 8, "Cafe")
+	_, err = svc.Pay(account.ID, 9, "Cafe")
+	_, err = svc.Pay(account.ID, 10, "Cafe")
+	_, err = svc.Pay(account.ID, 11, "Cafe")
+	if err != nil {
+		b.Errorf("method Pay returned not nil error, err => %v", err)
+	}
+
+	want := types.Money(66)
+
+	got := svc.SumPayments(2)
+	if want != got {
+		b.Errorf(" error, want => %v got => %v", want, got)
+	}
+
 }
