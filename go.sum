@@ -1,4 +1,6 @@
 github.com/google/uuid v1.1.2 h1:EVhdT+1Kseyi1/pUmXKaFxYsDNy9RQYkMWRH68J/W7Y=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/najibulloShapoatov/wallet v1.3.0 h1:KlKeVctOgpc8Y/3NB8S48rO+XXSq2hJtiIG0nxwLyOs=
+github.com/najibulloShapoatov/wallet v1.3.0/go.mod h1:zMNNDrLwXieL4K4yqk3e8PEtPzpy2mrRltrkFkpMTuQ=
 github.com/shohinsherov/wallet v1.3.0 h1:Bn9J/5wm/6m4BQwKVOSAV3q554luey7Ax09rVkU8zWk=
 github.com/shohinsherov/wallet v1.3.0/go.mod h1:N1pKS6EcHjMjpWspJabthWUtAoTGl84oOjqSirJJkkc=

@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"testing"
+
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
 
@@ -179,16 +180,13 @@ func TestService_Export_success_user(t *testing.T) {
 func TestService_Import_success_user(t *testing.T) {
 	var svc Service
 
-
 	err := svc.ImportFromFile("export.txt")
-	
+
 	if err != nil {
 		t.Errorf("method ExportToFile returned not nil error, err => %v", err)
 	}
 
 }
-
-
 
 func TestService_ExportImport_success_user(t *testing.T) {
 	var svc Service
@@ -197,20 +195,19 @@ func TestService_ExportImport_success_user(t *testing.T) {
 	svc.RegisterAccount("+992000000002")
 	svc.RegisterAccount("+992000000003")
 	svc.RegisterAccount("+992000000004")
-	
+
 	err := svc.Export("data")
 	if err != nil {
 		t.Errorf("method ExportToFile returned not nil error, err => %v", err)
 	}
 
 	err = svc.Import("data")
-	
+
 	if err != nil {
 		t.Errorf("method ExportToFile returned not nil error, err => %v", err)
 	}
 
 }
-
 
 func TestService_ExportHistory_success_user(t *testing.T) {
 	var svc Service
@@ -254,8 +251,7 @@ func TestService_ExportHistory_success_user(t *testing.T) {
 
 }
 
-
-func BenchmarkSumPayment_user(b *testing.B){
+func BenchmarkSumPayment_user(b *testing.B) {
 	var svc Service
 
 	account, err := svc.RegisterAccount("+992000000001")
@@ -287,7 +283,7 @@ func BenchmarkSumPayment_user(b *testing.B){
 	want := types.Money(66)
 
 	got := svc.SumPayments(2)
-	if want != got{
+	if want != got {
 		b.Errorf(" error, want => %v got => %v", want, got)
 	}
 
