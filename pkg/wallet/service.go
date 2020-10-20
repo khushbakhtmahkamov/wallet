@@ -464,3 +464,71 @@ func (s *Service) Import(dir string) error {
 
 	return nil
 }
+
+func (s *Service) ExportAccountHistory(accountID int64) ([]types.Payment, error) {
+
+	account, err := s.FindAccountByID(accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var payments []types.Payment
+	for _, v := range s.payments {
+		if v.AccountID == account.ID {
+			data := types.Payment{
+				ID:        v.ID,
+				AccountID: v.AccountID,
+				Amount:    v.Amount,
+				Category:  v.Category,
+				Status:    v.Status,
+			}
+			payments = append(payments, data)
+		}
+	}
+	return payments, nil
+}
+
+//HistoryToFiles ...
+func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records int) error {
+
+	if len(payments) > 0 {
+		if len(payments) <= records {
+			file, _ := os.OpenFile(dir+"/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+			defer file.Close()
+
+			var str string
+			for _, v := range payments {
+				str += fmt.Sprint(v.ID) + ";" + fmt.Sprint(v.AccountID) + ";" + fmt.Sprint(v.Amount) + ";" + fmt.Sprint(v.Category) + ";" + fmt.Sprint(v.Status) + "\n"
+			}
+			file.WriteString(str)
+		} else {
+
+			var str string
+			k := 0
+			t := 1
+			var file *os.File
+			for _, v := range payments {
+				if k == 0 {
+					file, _ = os.OpenFile(dir+"/payments"+fmt.Sprint(t)+".dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+				}
+				k++
+				str = fmt.Sprint(v.ID) + ";" + fmt.Sprint(v.AccountID) + ";" + fmt.Sprint(v.Amount) + ";" + fmt.Sprint(v.Category) + ";" + fmt.Sprint(v.Status) + "\n"
+				_, err = file.WriteString(str)
+				if k == records {
+					str = ""
+					t++
+					k = 0
+					file.Close()
+				}
+			}
+			/* _, err = file.WriteString(str)
+			if err == nil{
+				file.Close()
+			} */
+
+		}
+	}
+
+	return nil
+}
