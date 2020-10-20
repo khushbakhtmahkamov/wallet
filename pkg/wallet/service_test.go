@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"testing"
-
 	"github.com/khushbakhtmahkamov/wallet/pkg/types"
 )
 
