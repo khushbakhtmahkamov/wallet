@@ -266,15 +266,6 @@ func (s *Service) ImportFromFile(path string) error {
 //Export method
 func (s *Service) Export(dir string) error {
 
-	/* 	abs, err := filepath.Abs(dir)
-	   	if err != nil {
-	   		return err
-	   	}
-	   	err = os.Chdir(abs)
-	   	if err != nil {
-	   		return err
-	   	} */
-
 	if len(s.accounts) > 0 {
 		file, _ := os.OpenFile(dir+"/accounts.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 
@@ -579,71 +570,16 @@ func (s *Service) SumPayments(goroutines int) types.Money {
 //FilterPayments ...
 func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payment, error) {
 
-	account, err := s.FindAccountByID(accountID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	wg := sync.WaitGroup{}
-	mu := sync.Mutex{}
-	kol := 0
-	i := 0
-	var ps []types.Payment
-	if goroutines == 0 {
-		kol = len(s.payments)
-	} else {
-		kol = int(len(s.payments) / goroutines)
-	}
-	for i = 0; i < goroutines-1; i++ {
-		wg.Add(1)
-		go func(index int) {
-			defer wg.Done()
-			var pays []types.Payment
-			payments := s.payments[index*kol : (index+1)*kol]
-			for _, v := range payments {
-				if v.AccountID == account.ID {
-					pays = append(pays, types.Payment{
-						ID:        v.ID,
-						AccountID: v.AccountID,
-						Amount:    v.Amount,
-						Category:  v.Category,
-						Status:    v.Status,
-					})
-				}
-			}
-			mu.Lock()
-			ps = append(ps, pays...)
-			mu.Unlock()
-
-		}(i)
-	}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var pays []types.Payment
-		payments := s.payments[i*kol:]
-		for _, v := range payments {
-			if v.AccountID == account.ID {
-				pays = append(pays, types.Payment{
-					ID:        v.ID,
-					AccountID: v.AccountID,
-					Amount:    v.Amount,
-					Category:  v.Category,
-					Status:    v.Status,
-				})
-			}
+	p, err := s.FilterPaymentsByFn(func(payment types.Payment) bool {
+		if payment.AccountID == accountID {
+			return true
 		}
-		mu.Lock()
-		ps = append(ps, pays...)
-		mu.Unlock()
+		return false
+	},
+		goroutines)
 
-	}()
-	wg.Wait()
-	if len(ps) == 0 {
-		return nil, nil
-	}
-	return ps, nil
+	return p, err
+
 }
 
 //FilterPaymentsByFn ...
@@ -684,6 +620,7 @@ func (s *Service) FilterPaymentsByFn(filter func(payment types.Payment) bool, go
 
 		}(i)
 	}
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -715,6 +652,8 @@ func (s *Service) FilterPaymentsByFn(filter func(payment types.Payment) bool, go
 	return ps, nil
 }
 
+/*
+//SumPaymentsWithProgress ...
 func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {
 	const sizeOfBlock = 100_000
 	var goroutines int = len(s.payments) / sizeOfBlock
@@ -745,6 +684,66 @@ func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {
 		channels[i] = ch
 	}
 	return merge(channels)
+} */
+
+//SumPaymentsWithProgress ...
+func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {
+
+	ch := make(chan types.Progress)
+
+	size := 100_000
+	parts := len(s.payments) / size
+	wg := sync.WaitGroup{}
+	i := 0
+	if parts < 1 {
+		parts = 1
+	}
+	for i := 0; i < parts; i++ {
+		wg.Add(1)
+		var payments []*types.Payment
+		if len(s.payments) < size {
+			payments = s.payments
+		} else {
+			payments = s.payments[i*size : (i+1)*size]
+		}
+		go func(ch chan types.Progress, data []*types.Payment) {
+			defer wg.Done()
+			val := types.Money(0)
+			for _, v := range data {
+				val += v.Amount
+			}
+			if len(s.payments) < size {
+				ch <- types.Progress{
+					Part:   len(data),
+					Result: val,
+				}
+			}
+
+		}(ch, payments)
+	}
+	if len(s.payments) > size {
+		wg.Add(1)
+		payments := s.payments[i*size:]
+		go func(ch chan types.Progress, data []*types.Payment) {
+			defer wg.Done()
+			val := types.Money(0)
+			for _, v := range data {
+				val += v.Amount
+			}
+			ch <- types.Progress{
+				Part:   len(data),
+				Result: val,
+			}
+
+		}(ch, payments)
+	}
+
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+
+	return ch
 }
 
 func merge(channels []<-chan types.Progress) <-chan types.Progress {
